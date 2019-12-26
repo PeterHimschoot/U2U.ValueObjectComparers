@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29521.150
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{774F1991-A30C-4D43-82C9-47427B7CB5E2}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "U2U.ValueObjectComparers", "src\U2U.ValueObjectComparers\U2U.ValueObjectComparers.csproj", "{7C34690A-A2B9-44BD-86A7-17DAF8CB0CFE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{DE11D032-20C1-408D-95AB-F0B79E5DFD87}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "U2U.ValueObjectComparers.Tests", "test\U2U.ValueObjectComparers.Tests\U2U.ValueObjectComparers.Tests.csproj", "{F319FEF9-E2AA-45C8-A1EC-C620826584BF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{BE798551-75F3-41E0-BEE4-39D602BBC44E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "U2U.ValueObjectComparers.Performance", "perf\U2U.ValueObjectComparers.Performance\U2U.ValueObjectComparers.Performance.csproj", "{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7C34690A-A2B9-44BD-86A7-17DAF8CB0CFE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C34690A-A2B9-44BD-86A7-17DAF8CB0CFE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C34690A-A2B9-44BD-86A7-17DAF8CB0CFE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C34690A-A2B9-44BD-86A7-17DAF8CB0CFE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F319FEF9-E2AA-45C8-A1EC-C620826584BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F319FEF9-E2AA-45C8-A1EC-C620826584BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F319FEF9-E2AA-45C8-A1EC-C620826584BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F319FEF9-E2AA-45C8-A1EC-C620826584BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7C34690A-A2B9-44BD-86A7-17DAF8CB0CFE} = {774F1991-A30C-4D43-82C9-47427B7CB5E2}
+		{F319FEF9-E2AA-45C8-A1EC-C620826584BF} = {DE11D032-20C1-408D-95AB-F0B79E5DFD87}
+		{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7} = {BE798551-75F3-41E0-BEE4-39D602BBC44E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A955F726-6612-4CED-8519-AE982EC921F3}
+	EndGlobalSection
+EndGlobal
