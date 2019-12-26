@@ -6,11 +6,14 @@
     <title>U2U.ValueObjectComparers</title>
     <authors>Peter Himschoot</authors>
     <owners>Peter Himschoot</owners>
-    <licenseUrl>https://choosealicense.com/licenses/mit/</licenseUrl>
+    <license type="expression">MIT</license>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Implement a ValueObject Equals method efficiently.</description>
     <releaseNotes>Use at your own risk ;)</releaseNotes>
     <tags>Domain Driven Design Value Object</tags>
+    <dependencies>
+      <group targetFramework="netstandard2.0"/>
+    </dependencies>
   </metadata>
   <files>
     <file src="bin/Release/netstandard2.0/U2U.ValueObjectComparers.dll" target="lib/netstandard2.0/U2U.ValueObjectComparers.dll" />
