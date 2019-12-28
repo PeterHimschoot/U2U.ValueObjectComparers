@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace BenchMarkSkeleton
+namespace U2U.ValueObjectComparers
 {
   public abstract class ValueObject
   {
@@ -23,6 +23,10 @@ namespace BenchMarkSkeleton
 
     public override bool Equals(object obj)
     {
+      if( object.ReferenceEquals(this, obj))
+      {
+        return true;
+      }
       if (obj == null || obj.GetType() != GetType())
       {
         return false;

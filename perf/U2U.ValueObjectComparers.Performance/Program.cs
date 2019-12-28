@@ -6,28 +6,12 @@ using BenchmarkDotNet.Environments;
 using BenchmarkDotNet.Exporters;
 using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Loggers;
-using BenchmarkDotNet.Order;
 using BenchmarkDotNet.Reports;
 using BenchmarkDotNet.Running;
 using BenchmarkDotNet.Toolchains.CsProj;
-using BenchMarkSkeleton;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Security;
-using System.Net.Sockets;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Security.Authentication;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading;
-using System.Threading.Tasks;
+using U2U.ValueObjectComparers;
 #pragma warning disable 0618
 
 public class MainConfig : ManualConfig
@@ -36,14 +20,14 @@ public class MainConfig : ManualConfig
   {
     // You can use this to compare performance between different runtimes...
     //Add(Job.Default.With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp20));
-    Add(Job.Default.With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp31));
+    this.Add(Job.Default.With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp31));
 
-    Add(MemoryDiagnoser.Default);
-    Add(new MinimalColumnProvider());
+    this.Add(MemoryDiagnoser.Default);
+    this.Add(new MinimalColumnProvider());
     // Add(MemoryDiagnoser.Default.GetColumnProvider());
     //Set(new DefaultOrderProvider(SummaryOrderPolicy.SlowestToFastest));
-    Add(MarkdownExporter.GitHub);
-    Add(new ConsoleLogger());
+    this.Add(MarkdownExporter.GitHub);
+    this.Add(new ConsoleLogger());
   }
 
   private sealed class MinimalColumnProvider : IColumnProvider
@@ -66,65 +50,69 @@ public class Test
   // ... benchmarks go here
 
   private const int fruityLoops = 2_000_000;
-  private DateTime now = new DateTime(2019, 12, 24);
+  private readonly DateTime now = new DateTime(2019, 12, 24);
 
-  private NestedValueObject myNested1 = new NestedValueObject
+  private readonly NestedValueObject myNested1 = new NestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
   };
-  private NestedValueObject myNested2 = new NestedValueObject
+  private readonly NestedValueObject myNested2 = new NestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
   };
-  private MSNestedValueObject msNested1 = new MSNestedValueObject
+  private readonly MSNestedValueObject msNested1 = new MSNestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
   };
-  private MSNestedValueObject msNested2 = new MSNestedValueObject
+  private readonly MSNestedValueObject msNested2 = new MSNestedValueObject
+  {
+    Price = 100M,
+    When = new DateTime(2019, 12, 24)
+  };
+    private readonly HCNestedValueObject hcNested1 = new HCNestedValueObject
+  {
+    Price = 100M,
+    When = new DateTime(2019, 12, 24)
+  };
+  private readonly HCNestedValueObject hcNested2 = new HCNestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
   };
 
+
+  [Benchmark()]
+  public void UsingHCValueObjectsThatAreEqual()
+  {
+    var obj1 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var obj2 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    bool shouldBeTrue = obj1.Equals(obj2);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      obj1.Equals(obj2);
+    }
+  }
+  
   [Benchmark()]
   public void UsingMyValueObjectsThatAreEqual()
   {
-    MyValueObject myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
-    MyValueObject myValueObject2 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var myValueObject2 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
 
     bool shouldBeTrue = myValueObject1.Equals(myValueObject2);
-    if (!shouldBeTrue) throw new Exception();
-    for (int i = 0; i < fruityLoops; i += 1)
+    if (!shouldBeTrue)
     {
-      myValueObject1.Equals(myValueObject2);
+      throw new Exception();
     }
-  }
 
-  [Benchmark()]
-  public void UsingMyValueObjectsThatAreEqualWithNesting()
-  {
-    MyValueObject myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested1 };
-    MyValueObject myValueObject2 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested2 };
-
-    bool shouldBeTrue = myValueObject1.Equals(myValueObject2);
-    if (!shouldBeTrue) throw new Exception();
-    for (int i = 0; i < fruityLoops; i += 1)
-    {
-      myValueObject1.Equals(myValueObject2);
-    }
-  }
-
-  [Benchmark()]
-  public void UsingMyValueObjectsThatAreNotEqual()
-  {
-    MyValueObject myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested1 };
-    MyValueObject myValueObject2 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 44, Nested = myNested2 };
-
-    bool shouldBeTrue = myValueObject1.Equals(myValueObject2);
-    if (shouldBeTrue) throw new Exception();
     for (int i = 0; i < fruityLoops; i += 1)
     {
       myValueObject1.Equals(myValueObject2);
@@ -134,23 +122,68 @@ public class Test
   [Benchmark()]
   public void UsingMSValueObjectsThatAreEqual()
   {
-    MSValueObject msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
-    MSValueObject msValueObject2 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var msValueObject2 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
     bool shouldBeTrue = msValueObject1.Equals(msValueObject2);
-    if (!shouldBeTrue) throw new Exception();
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
     for (int i = 0; i < fruityLoops; i += 1)
     {
       msValueObject1.Equals(msValueObject2);
+    }
+  }
+
+
+  [Benchmark()]
+  public void UsingHCValueObjectsThatAreEqualWithNesting()
+  {
+    var myValueObject1 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = hcNested1 };
+    var myValueObject2 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = hcNested2 };
+
+    bool shouldBeTrue = myValueObject1.Equals(myValueObject2);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      myValueObject1.Equals(myValueObject2);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingMyValueObjectsThatAreEqualWithNesting()
+  {
+    var myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested1 };
+    var myValueObject2 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested2 };
+
+    bool shouldBeTrue = myValueObject1.Equals(myValueObject2);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      myValueObject1.Equals(myValueObject2);
     }
   }
 
   [Benchmark()]
   public void UsingMSValueObjectsThatAreEqualWithNesting()
   {
-    MSValueObject msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = msNested1 };
-    MSValueObject msValueObject2 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = msNested2 };
+    var msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = msNested1 };
+    var msValueObject2 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = msNested2 };
     bool shouldBeTrue = msValueObject1.Equals(msValueObject2);
-    if (!shouldBeTrue) throw new Exception();
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
     for (int i = 0; i < fruityLoops; i += 1)
     {
       msValueObject1.Equals(msValueObject2);
@@ -158,12 +191,101 @@ public class Test
   }
 
   [Benchmark()]
+  public void UsingSameInstanceOfHCValueObject()
+  {
+    var myValueObject1 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = hcNested1 };
+
+    bool shouldBeTrue = myValueObject1.Equals(myValueObject1);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      myValueObject1.Equals(myValueObject1);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingSameInstanceOfMyValueObject()
+  {
+    var myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested1 };
+
+    bool shouldBeTrue = myValueObject1.Equals(myValueObject1);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      myValueObject1.Equals(myValueObject1);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingSameInstanceOfMSValueObject()
+  {
+    var msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    bool shouldBeTrue = msValueObject1.Equals(msValueObject1);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      msValueObject1.Equals(msValueObject1);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingHCValueObjectsThatAreNotEqual()
+  {
+    var obj1 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = hcNested1 };
+    var obj2 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 44, Nested = hcNested2 };
+    bool shouldBeTrue = obj1.Equals(obj2);
+    if (shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      obj1.Equals(obj2);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingMyValueObjectsThatAreNotEqual()
+  {
+    var myValueObject1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = myNested1 };
+    var myValueObject2 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 44, Nested = myNested2 };
+
+    bool shouldBeTrue = myValueObject1.Equals(myValueObject2);
+    if (shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      myValueObject1.Equals(myValueObject2);
+    }
+  }
+
+  [Benchmark()]
   public void UsingMSValueObjectsThatAreNotEqual()
   {
-    MSValueObject msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = msNested1 };
-    MSValueObject msValueObject2 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 44, Nested = msNested2 };
+    var msValueObject1 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43, Nested = msNested1 };
+    var msValueObject2 = new MSValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 44, Nested = msNested2 };
     bool shouldBeTrue = msValueObject1.Equals(msValueObject2);
-    if (shouldBeTrue) throw new Exception();
+    if (shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
     for (int i = 0; i < fruityLoops; i += 1)
     {
       msValueObject1.Equals(msValueObject2);
@@ -173,10 +295,14 @@ public class Test
   [Benchmark()]
   public void UsingMyValueObjectStructsThatAreEqual()
   {
-    MyValueObjectStruct obj1 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
-    MyValueObjectStruct obj2 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var obj1 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var obj2 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
     bool shouldBeTrue = obj1.Equals(obj2);
-    if (!shouldBeTrue) throw new Exception();
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
     for (int i = 0; i < fruityLoops; i += 1)
     {
       ((IEquatable<MyValueObjectStruct>)obj1).Equals(obj2);

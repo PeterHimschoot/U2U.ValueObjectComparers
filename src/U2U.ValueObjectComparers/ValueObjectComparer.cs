@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace U2U.ValueObjectComparers
 {
-  public class ValueObjectComparer<T>
+  public sealed class ValueObjectComparer<T>
   {
     class NullComparer
     {
@@ -76,6 +76,6 @@ namespace U2U.ValueObjectComparers
       => this.comparer(left, right);
 
     public bool Equals(T left, object right)
-      => object.ReferenceEquals(left, right) || (right.GetType() == typeof(T) && Equals(left, (T)right));
+      => object.ReferenceEquals(left, right) || (right is object && right.GetType() == typeof(T) && Equals(left, (T)right));
   }
 }

@@ -15,6 +15,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{BE798551-7
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "U2U.ValueObjectComparers.Performance", "perf\U2U.ValueObjectComparers.Performance\U2U.ValueObjectComparers.Performance.csproj", "{3B1EB7B3-D31A-42F9-8DEA-05D238E8F5A7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{6F968617-941F-41AC-B266-DBAD0AE53C76}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+		ReadMe.md = ReadMe.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

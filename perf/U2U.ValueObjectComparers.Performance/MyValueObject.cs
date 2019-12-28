@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using U2U.ValueObjectComparers;
 
-namespace BenchMarkSkeleton
+namespace U2U.ValueObjectComparers
 {
   public class NestedValueObject
   {
