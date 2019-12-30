@@ -37,20 +37,21 @@ namespace U2U.ValueObjectComparers
       
       if (prop.PropertyType.IsValueType)
       {
+        // Property if value type so directly call Equals
         return equalCall;
       }
       else
       {
+        // Generate
+        //       Expression<Func<T, T, bool>> ce = (T x, T y) => object.ReferenceEquals(x, y) || (x != null && x.Equals(y));
+
         Expression leftValue = Expression.Property(left, prop);
         Expression rightValue = Expression.Property(right, prop);
         Expression refEqual = Expression.ReferenceEqual(leftValue, rightValue);
         Expression nullConst = Expression.Constant(null);
         Expression leftIsNotNull = Expression.Not(Expression.ReferenceEqual(leftValue, nullConst));
-        Expression rightIsNotNull = Expression.Not(Expression.ReferenceEqual(rightValue, nullConst));
-        Expression neitherIsNull = Expression.AndAlso(leftIsNotNull, rightIsNotNull);
-
-        Expression neitherIsNullAndIsEqual = Expression.AndAlso(neitherIsNull, equalCall);
-        Expression either = Expression.OrElse(refEqual, neitherIsNullAndIsEqual);
+        Expression leftIsNotNullAndIsEqual = Expression.AndAlso(leftIsNotNull, equalCall);
+        Expression either = Expression.OrElse(refEqual, leftIsNotNullAndIsEqual);
 
         return either;
       }

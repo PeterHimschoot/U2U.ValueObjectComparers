@@ -83,7 +83,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
       Expression<Func<string, string, bool>> ce = 
         (string x, string y) => object.ReferenceEquals(x, y) 
-                             || (y != null && x != null && x.Equals(y));
+                             || (x != null && x.Equals(y));
 
     }
 
