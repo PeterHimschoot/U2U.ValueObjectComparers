@@ -33,8 +33,9 @@ namespace U2U.ValueObjectComparers
 
     private Func<T, T, bool> comparer = GenerateComparer();
 
-    private static Expression GenerateEqualityExpression(MethodInfo equalMethod, ParameterExpression left, ParameterExpression right, PropertyInfo prop)
+    private static Expression GenerateEqualityExpression(ParameterExpression left, ParameterExpression right, PropertyInfo prop)
     {
+      MethodInfo equalMethod = prop.PropertyType.GetMethod(nameof(Equals), new Type[] { typeof(object) });
       Expression equalCall = Expression.Call(Expression.Property(left, prop), equalMethod, Expression.Convert(Expression.Property(right, prop), typeof(object)));
       if (prop.PropertyType.IsValueType)
       {
@@ -64,8 +65,7 @@ namespace U2U.ValueObjectComparers
       ParameterExpression right = Expression.Parameter(typeof(T), "right");
       foreach (PropertyInfo propInfo in typeof(T).GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
       {
-        MethodInfo equalMethod = propInfo.PropertyType.GetMethod(nameof(Equals), new Type[] { typeof(object) });
-        comparers.Add(GenerateEqualityExpression(equalMethod, left, right, propInfo));
+        comparers.Add(GenerateEqualityExpression(left, right, propInfo));
       }
       Expression ands = comparers.Aggregate((left, right) => Expression.AndAlso(left, right));
       Func<T, T, bool> andComparer = Expression.Lambda<Func<T, T, bool>>(ands, left, right).Compile();
