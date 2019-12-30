@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace U2U.ValueObjectComparers
 {
-  public class HCNestedValueObject
+  public sealed class HCNestedValueObject : IEquatable<HCNestedValueObject>
   {
     public static bool operator==(HCNestedValueObject left, HCNestedValueObject right)
     {
@@ -29,13 +30,16 @@ namespace U2U.ValueObjectComparers
       if (this.GetType() == obj?.GetType())
       {
         var other = obj as HCNestedValueObject;
-        return this.Price == other.Price && this.When == other.When;
+        return Equals(other);
       }
       return false;
     }
+
+    public bool Equals([AllowNull] HCNestedValueObject other)
+      => this.Price == other.Price && this.When == other.When;
   }
 
-  public class HCValueObject
+  public sealed class HCValueObject : IEquatable<HCValueObject>
   {
     public string FirstName { get; set; }
     public string LastName { get; set; }
@@ -51,13 +55,17 @@ namespace U2U.ValueObjectComparers
       if (this.GetType() == obj?.GetType())
       {
         var other = obj as HCValueObject;
-        return this.FirstName == other.FirstName
-          && this.LastName == other.LastName
-          && this.Age == other.Age
-          && this.Nested == other.Nested;
+        return Equals(other);
       }
       return false;
     }
+
+    public bool Equals([AllowNull] HCValueObject other) 
+      =>  object.ReferenceEquals(this, other) 
+      || (this.FirstName == other.FirstName
+          && this.LastName == other.LastName
+          && this.Age == other.Age
+          && this.Nested == other.Nested);
   }
 
 }

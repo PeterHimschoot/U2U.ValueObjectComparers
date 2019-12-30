@@ -7,13 +7,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
   public class SomeObject : IEquatable<SomeObject>
   {
     public static bool operator ==(SomeObject left, SomeObject right)
-    {
-      if (object.ReferenceEquals(left, right))
-      {
-        return true;
-      }
-      return !ReferenceEquals(left, null) && left.Equals(right);
-    }
+      => ValueObjectComparer<SomeObject>.Instance.Equals(left, right);
 
     public static bool operator !=(SomeObject left, SomeObject right)
       => !(left == right);
@@ -21,6 +15,9 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     public string Name { get; set; }
 
     public int Age { get; set; }
+
+    [Ignore]
+    public int NotUsed { get; set; }
 
     public override bool Equals([AllowNull] object obj)
       => ValueObjectComparer<SomeObject>.Instance.Equals(this, obj);

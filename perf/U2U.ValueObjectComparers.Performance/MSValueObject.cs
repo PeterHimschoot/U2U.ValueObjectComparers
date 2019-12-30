@@ -61,7 +61,7 @@ namespace U2U.ValueObjectComparers
     }
   }
 
-  public class MSNestedValueObject : ValueObject, IEquatable<MSNestedValueObject>
+  public sealed class MSNestedValueObject : ValueObject, IEquatable<MSNestedValueObject>
   {
     public decimal Price { get; set; }
 
@@ -76,7 +76,7 @@ namespace U2U.ValueObjectComparers
       yield return When;
     }
   }
-  public class MSValueObject : ValueObject, IEquatable<MSValueObject>
+  public sealed class MSValueObject : ValueObject, IEquatable<MSValueObject>
   {
     public string FirstName { get; set; }
     public string LastName { get; set; }

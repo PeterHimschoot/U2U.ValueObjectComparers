@@ -52,12 +52,12 @@ public class Test
   private const int fruityLoops = 2_000_000;
   private readonly DateTime now = new DateTime(2019, 12, 24);
 
-  private readonly NestedValueObject myNested1 = new NestedValueObject
+  private readonly MyNestedValueObject myNested1 = new MyNestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
   };
-  private readonly NestedValueObject myNested2 = new NestedValueObject
+  private readonly MyNestedValueObject myNested2 = new MyNestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
@@ -305,7 +305,41 @@ public class Test
 
     for (int i = 0; i < fruityLoops; i += 1)
     {
-      ((IEquatable<MyValueObjectStruct>)obj1).Equals(obj2);
+      obj1.Equals(obj2);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingMyValueObjectStructsThatAreEqualUsingObject()
+  {
+    var obj1 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    object obj2 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    bool shouldBeTrue = obj1.Equals(obj2);
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      obj1.Equals(obj2);
+    }
+  }
+
+  [Benchmark()]
+  public void UsingMyValueObjectStructsThatAreEqualWithInModifier()
+  {
+    var obj1 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    var obj2 = new MyValueObjectStruct { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    bool shouldBeTrue = obj1 == obj2;
+    if (!shouldBeTrue)
+    {
+      throw new Exception();
+    }
+
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      shouldBeTrue = (obj1 == obj2);
     }
   }
 }

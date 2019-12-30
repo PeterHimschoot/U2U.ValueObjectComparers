@@ -5,6 +5,8 @@ using System.Reflection;
 using U2U.ValueObjectComparers;
 using Xunit;
 
+#nullable enable
+
 namespace U2U.EntityFrameworkCore.Abstractions.Tests
 {
   public class ValueObjectComparerShould
@@ -42,7 +44,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
       public int? Agee { get; set; }
 
-      public override bool Equals(object obj)
+      public override bool Equals([Nullable] object obj)
         => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.Equals(this, obj);
     }
 
@@ -71,6 +73,20 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       public override bool Equals(object obj)
         => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.Equals(this, obj);
     }
+
+    delegate bool CompFunc<T>(in T x, in T y) where T : struct;
+
+    [Fact]
+    public void UseInModifierInLambda()
+    {
+      CompFunc<int> c = (in int x, in int y) => x == y;
+
+      Expression<Func<string, string, bool>> ce = 
+        (string x, string y) => object.ReferenceEquals(x, y) 
+                             || (y != null && x != null && x.Equals(y));
+
+    }
+
 
     [Fact]
     public void FactCheck()
@@ -152,6 +168,17 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     {
       var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
       var obj2 = new SomeObject() { Name = "Jef" + "ke", Age = 43 };
+      obj1.Equals(obj2).Should().BeTrue();
+      obj2.Equals(obj1).Should().BeTrue();
+      (obj1 == obj2).Should().BeTrue();
+      (obj2 == obj1).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IgnorePropertiesWithIgnoreAttrbute()
+    {
+      var obj1 = new SomeObject() { Name = "Jefke", Age = 43, NotUsed = 44 };
+      var obj2 = new SomeObject() { Name = "Jef" + "ke", Age = 43, NotUsed = 666 };
       obj1.Equals(obj2).Should().BeTrue();
       obj2.Equals(obj1).Should().BeTrue();
       (obj1 == obj2).Should().BeTrue();
@@ -259,11 +286,20 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       obj1.Equals(obj2).Should().BeFalse();
       obj2.Equals(obj1).Should().BeFalse();
     }
+
     [Fact]
     public void ReturnFalseForNonEqualObjects()
     {
       var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
       var obj2 = new SomeObject() { Name = "Jef", Age = 43 };
+      obj1.Equals(obj2).Should().BeFalse();
+    }
+
+    [Fact]
+    public void ReturnFalseForDiffTypedObjects()
+    {
+      var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
+      var obj2 = new SomeStruct() { Name = "Jefke", Age = 43 };
       obj1.Equals(obj2).Should().BeFalse();
     }
   }
