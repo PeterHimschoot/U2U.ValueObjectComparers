@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 
@@ -60,11 +61,14 @@ namespace U2U.ValueObjectComparers
     }
   }
 
-  public class MSNestedValueObject : ValueObject
+  public class MSNestedValueObject : ValueObject, IEquatable<MSNestedValueObject>
   {
     public decimal Price { get; set; }
 
     public DateTime When { get; set; }
+
+    public bool Equals([AllowNull] MSNestedValueObject other)
+      => base.Equals(other);
 
     protected override IEnumerable<object> GetAtomicValues()
     {
@@ -72,12 +76,15 @@ namespace U2U.ValueObjectComparers
       yield return When;
     }
   }
-  public class MSValueObject : ValueObject
+  public class MSValueObject : ValueObject, IEquatable<MSValueObject>
   {
     public string FirstName { get; set; }
     public string LastName { get; set; }
     public int Age { get; set; }
     public MSNestedValueObject Nested { get; set; }
+
+    public bool Equals([AllowNull] MSValueObject other) 
+      => base.Equals(other);
 
     protected override IEnumerable<object> GetAtomicValues()
     {

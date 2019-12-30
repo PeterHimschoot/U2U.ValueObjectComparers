@@ -4,7 +4,7 @@ using U2U.ValueObjectComparers;
 
 namespace U2U.ValueObjectComparers
 {
-  public class NestedValueObject
+  public class NestedValueObject:IEquatable<NestedValueObject>
   {
     public decimal Price { get; set; }
 
@@ -12,9 +12,11 @@ namespace U2U.ValueObjectComparers
 
     public override bool Equals(object obj)
       => ValueObjectComparer<NestedValueObject>.Instance.Equals(this, obj);
+    public bool Equals([AllowNull] NestedValueObject other) 
+      => ValueObjectComparer<NestedValueObject>.Instance.Equals(this, other);
   }
 
-  public class MyValueObject
+  public class MyValueObject:IEquatable<MyValueObject>
   {
 
     public string FirstName { get; set; }
@@ -23,6 +25,8 @@ namespace U2U.ValueObjectComparers
     public NestedValueObject Nested { get; set; }
     public override bool Equals(object obj)
       => ValueObjectComparer<MyValueObject>.Instance.Equals(this, obj);
+    public bool Equals([AllowNull] MyValueObject other) 
+      => ValueObjectComparer<MyValueObject>.Instance.Equals(this, other);
   }
 
   public struct MyValueObjectStruct : IEquatable<MyValueObjectStruct>

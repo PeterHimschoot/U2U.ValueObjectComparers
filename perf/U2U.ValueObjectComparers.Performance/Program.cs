@@ -72,7 +72,7 @@ public class Test
     Price = 100M,
     When = new DateTime(2019, 12, 24)
   };
-    private readonly HCNestedValueObject hcNested1 = new HCNestedValueObject
+  private readonly HCNestedValueObject hcNested1 = new HCNestedValueObject
   {
     Price = 100M,
     When = new DateTime(2019, 12, 24)
@@ -100,7 +100,7 @@ public class Test
       obj1.Equals(obj2);
     }
   }
-  
+
   [Benchmark()]
   public void UsingMyValueObjectsThatAreEqual()
   {

@@ -19,7 +19,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     public override bool Equals(object obj)
       => ValueObjectComparer<SomeStruct>.Instance.Equals(this, obj);
 
-    public bool Equals([AllowNull] SomeStruct other)
+    public bool Equals([AllowNull]SomeStruct other)
       => ValueObjectComparer<SomeStruct>.Instance.Equals(this, other);
   }
 }
