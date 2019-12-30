@@ -4,6 +4,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 
+#nullable enable
+
 namespace U2U.ValueObjectComparers
 {
   // Declaring our own delegate to use C# 7 in arguments for struct types, as soon as I figure out how to make this work with Lambda<>.Compile
@@ -80,11 +82,11 @@ namespace U2U.ValueObjectComparers
 
     private CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
 
-    public bool Equals(in T left, in T right)
+    public bool Equals(T left, T right)
       => object.ReferenceEquals(left, right) 
       || (left is object && right is object && this.comparer(left, right));
 
-    public bool Equals(T left, object right)
+    public bool Equals(T left, object? right)
       => object.ReferenceEquals(left, right) 
       || (right is object && right.GetType() == left?.GetType() && this.comparer(left, (T)right));
   }

@@ -14,8 +14,8 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     [Fact]
     public void ReturnTrueForBothNullReferences()
     {
-      SomeObject obj1 = null;
-      SomeObject obj2 = null;
+      SomeObject? obj1 = null;
+      SomeObject? obj2 = null;
       ValueObjectComparer<SomeObject> sut = ValueObjectComparer<SomeObject>.Instance;
       sut.Equals(obj1, obj2).Should().BeTrue();
     }
@@ -44,7 +44,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
       public int? Agee { get; set; }
 
-      public override bool Equals([Nullable] object obj)
+      public override bool Equals(object? obj)
         => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.Equals(this, obj);
     }
 
@@ -70,7 +70,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     {
       public string Name { get; set; }
 
-      public override bool Equals(object obj)
+      public override bool Equals(object? obj)
         => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.Equals(this, obj);
     }
 
