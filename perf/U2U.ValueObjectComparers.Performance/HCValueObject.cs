@@ -37,6 +37,16 @@ namespace U2U.ValueObjectComparers
 
     public bool Equals([AllowNull] HCNestedValueObject other)
       => this.Price == other.Price && this.When == other.When;
+
+    public override int GetHashCode()
+    {
+      var hash = new HashCode();
+      hash.Add(this.Price);
+      hash.Add(this.When);
+      return hash.ToHashCode();
+    }
+  //=> HashCode.Combine(this.Price, this.When);
+
   }
 
   public sealed class HCValueObject : IEquatable<HCValueObject>
@@ -66,6 +76,9 @@ namespace U2U.ValueObjectComparers
           && this.LastName == other.LastName
           && this.Age == other.Age
           && this.Nested == other.Nested);
+
+    public override int GetHashCode()
+      => HashCode.Combine(this.FirstName, this.LastName, this.Age, this.Nested);
   }
 
 }

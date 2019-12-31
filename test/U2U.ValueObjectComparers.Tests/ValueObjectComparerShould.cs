@@ -38,9 +38,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       sut.Equals(obj1, null).Should().BeFalse();
     }
 
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     private class SomeObjectWithValueTypeProperty
-#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     {
       public int Age { get; set; }
 
@@ -48,6 +46,10 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
       public override bool Equals(object? obj)
         => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.Equals(this, obj);
+
+      public override int GetHashCode()
+       => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.GetHashCode();
+
     }
 
     [Fact]
@@ -66,14 +68,15 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       obj1.Equals(obj2).Should().BeFalse();
     }
 
-#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     private class SomeObjectWithStringProperty
-#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
     {
-      public string Name { get; set; }
+      public string? Name { get; set; }
 
       public override bool Equals(object? obj)
         => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.Equals(this, obj);
+      public override int GetHashCode()
+       => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.GetHashCode();
+
     }
 
     private delegate bool CompFunc<T>(in T x, in T y) where T : struct;
@@ -99,13 +102,13 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       altName += "ke";
       object.ReferenceEquals(obj1.Name, altName).Should().BeFalse();
 
-      PropertyInfo propInfo = typeof(SomeObjectWithStringProperty).GetProperty(nameof(SomeObjectWithStringProperty.Name), BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public);
+      PropertyInfo propInfo = typeof(SomeObjectWithStringProperty).GetProperty(nameof(SomeObjectWithStringProperty.Name), BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public)!;
       propInfo.PropertyType.Should().BeSameAs(typeof(string));
 
       ParameterExpression left = Expression.Parameter(typeof(SomeObjectWithStringProperty), "left");
       ParameterExpression right = Expression.Parameter(typeof(SomeObjectWithStringProperty), "right");
 
-      MethodInfo equalMethod = propInfo.PropertyType.GetMethod(nameof(Equals), new Type[] { propInfo.PropertyType });
+      MethodInfo equalMethod = propInfo.PropertyType.GetMethod(nameof(Equals), new Type[] { propInfo.PropertyType })!;
       Expression equalCall = Expression.Call(Expression.Property(left, propInfo), equalMethod, Expression.Property(right, propInfo));
 
       Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool> comparer = Expression.Lambda<Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool>>(equalCall, left, right).Compile();
@@ -139,12 +142,6 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       obj2.Name = null;
       comparer(obj1, obj2).Should().BeFalse(); // One side is null
       comparer(obj2, obj1).Should().BeFalse(); // One side is null
-
-      // Either both null or non-null
-      //Expression xorNull = Expression.ExclusiveOr(leftIsNull, rightIsNull);
-      //Expression orNull = Expression.OrElse(leftIsNull, equalCall);
-      //Expression and = Expression.AndAlso(xorNull, orNull);
-
     }
 
     [Fact]
@@ -225,8 +222,8 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     public void ReturnTrueForEqualObjectsWithNestedNulls()
     {
       DateTime now = DateTime.Now;
-      NestedValueObject nested1 = null;
-      NestedValueObject nested2 = null;
+      NestedValueObject? nested1 = null;
+      NestedValueObject? nested2 = null;
 
       var obj1 = new SomeObjectWithNested()
       {
@@ -270,7 +267,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     public void ReturnFalseForEqualObjectsWithNestedNulls()
     {
       DateTime now = DateTime.Now;
-      NestedValueObject nested1 = null;
+      NestedValueObject? nested1 = null;
       var nested2 = new NestedValueObject { Price = 10M, When = now }; ;
 
       var obj1 = new SomeObjectWithNested()
@@ -346,13 +343,22 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     [Fact]
     public void ReturnSomeHashCodeForEqualObjects()
     {
-      Func<SomeObject, int> hasher = GenerateHasher<SomeObject>();
-
       var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
       var obj2 = new SomeObject() { Name = "Jefke", Age = 43 };
 
       (obj1 == obj2).Should().BeTrue();
       obj1.GetHashCode().Should().Be(obj2.GetHashCode());
+    }
+
+    [Fact]
+    public void ReturnSomeHashCodeForSameObject()
+    {
+      var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
+
+#pragma warning disable CS1718 // Comparison made to same variable
+      (obj1 == obj1).Should().BeTrue();
+#pragma warning restore CS1718 // Comparison made to same variable
+      obj1.GetHashCode().Should().Be(obj1.GetHashCode());
     }
   }
 }

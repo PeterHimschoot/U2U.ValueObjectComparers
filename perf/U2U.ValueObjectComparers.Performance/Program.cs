@@ -83,7 +83,7 @@ public class Test
     When = new DateTime(2019, 12, 24)
   };
 
-
+#if false
   [Benchmark()]
   public void UsingHCValueObjectsThatAreEqual()
   {
@@ -342,4 +342,28 @@ public class Test
       shouldBeTrue = (obj1 == obj2);
     }
   }
+#endif
+
+  [Benchmark()]
+  public void UsingHCValueObjectsHashCode()
+  {
+    var obj1 = new HCValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      int hash = obj1.GetHashCode();
+    }
+  }
+
+  [Benchmark()]
+  public void UsingMyValueObjectsHashCode()
+  {
+    var obj1 = new MyValueObject { FirstName = "Jefke", LastName = "Vandersmossen", Age = 43 };
+   
+    for (int i = 0; i < fruityLoops; i += 1)
+    {
+      int hash = obj1.GetHashCode();
+    }
+  }
+
+
 }

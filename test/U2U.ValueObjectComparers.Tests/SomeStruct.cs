@@ -21,5 +21,9 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
     public bool Equals([AllowNull]SomeStruct other)
       => ValueObjectComparer<SomeStruct>.Instance.Equals(this, other);
+
+    public override int GetHashCode()
+      => ValueObjectComparer<SomeStruct>.Instance.GetHashCode();
+
   }
 }

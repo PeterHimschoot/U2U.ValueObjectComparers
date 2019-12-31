@@ -13,6 +13,8 @@ namespace U2U.ValueObjectComparers
       => ValueObjectComparer<MyNestedValueObject>.Instance.Equals(this, obj);
     public bool Equals([AllowNull] MyNestedValueObject other)
       => ValueObjectComparer<MyNestedValueObject>.Instance.Equals(this, other);
+    public override int GetHashCode()
+     => ValueObjectComparer<MyNestedValueObject>.Instance.GetHashCode(this);
   }
 
   public sealed class MyValueObject : IEquatable<MyValueObject>
@@ -26,5 +28,9 @@ namespace U2U.ValueObjectComparers
       => ValueObjectComparer<MyValueObject>.Instance.Equals(this, obj);
     public bool Equals([AllowNull] MyValueObject other)
       => ValueObjectComparer<MyValueObject>.Instance.Equals(this, other);
+
+    public override int GetHashCode()
+      => ValueObjectComparer<MyValueObject>.Instance.GetHashCode(this);
+
   }
 }

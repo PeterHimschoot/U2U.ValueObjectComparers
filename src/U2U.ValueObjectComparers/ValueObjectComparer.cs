@@ -164,11 +164,11 @@ namespace U2U.ValueObjectComparers
     private CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
     private Func<T, int> hasher = ExpressionGenerater.GenerateHasher<T>();
 
-    public bool Equals(T left, T right)
+    public bool Equals(T? left, T? right)
       => object.ReferenceEquals(left, right)
       || (left is object && right is object && this.comparer(left, right));
 
-    public bool Equals(T left, object? right)
+    public bool Equals(T? left, object? right)
       => object.ReferenceEquals(left, right)
       || (right is object && right.GetType() == left?.GetType() && this.comparer(left, (T)right));
 
@@ -181,11 +181,15 @@ namespace U2U.ValueObjectComparers
     public static ValueObjectComparerStruct<T> Instance { get; } = new ValueObjectComparerStruct<T>();
 
     private CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
+    private Func<T, int> hasher = ExpressionGenerater.GenerateHasher<T>();
 
     public bool Equals(in T left, in T right)
       => this.comparer(left, right);
 
     public bool Equals(T left, object right)
       => right is object && right.GetType() == typeof(T) && Equals(left, (T)right);
+    public int GetHashCode(T obj)
+      => hasher(obj);
+
   }
 }

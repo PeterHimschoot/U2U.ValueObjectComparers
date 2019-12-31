@@ -22,5 +22,8 @@ namespace U2U.ValueObjectComparers
       => ValueObjectComparerStruct<MyValueObjectStruct>.Instance.Equals(this, obj);
     public bool Equals(MyValueObjectStruct other)
       => ValueObjectComparerStruct<MyValueObjectStruct>.Instance.Equals(this, other);
+    public override int GetHashCode()
+      => ValueObjectComparerStruct<MyValueObjectStruct>.Instance.GetHashCode();
+
   }
 }

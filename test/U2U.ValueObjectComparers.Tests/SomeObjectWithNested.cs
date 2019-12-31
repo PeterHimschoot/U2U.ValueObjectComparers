@@ -23,6 +23,10 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
     public override bool Equals(object obj)
       => ValueObjectComparer<NestedValueObject>.Instance.Equals(this, obj);
+
+    public override int GetHashCode()
+  => ValueObjectComparer<NestedValueObject>.Instance.GetHashCode();
+
   }
 
   public class SomeObjectWithNested
@@ -47,5 +51,9 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 
     public override bool Equals(object obj)
       => ValueObjectComparer<SomeObjectWithNested>.Instance.Equals(this, obj);
+
+    public override int GetHashCode()
+  => ValueObjectComparer<SomeObjectWithNested>.Instance.GetHashCode();
+
   }
 }
