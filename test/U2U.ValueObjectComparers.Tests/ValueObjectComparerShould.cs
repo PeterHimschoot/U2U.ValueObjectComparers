@@ -1,5 +1,7 @@
 ﻿using FluentAssertions;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using U2U.ValueObjectComparers;
@@ -74,15 +76,15 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
         => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.Equals(this, obj);
     }
 
-    delegate bool CompFunc<T>(in T x, in T y) where T : struct;
+    private delegate bool CompFunc<T>(in T x, in T y) where T : struct;
 
     [Fact]
     public void UseInModifierInLambda()
     {
       CompFunc<int> c = (in int x, in int y) => x == y;
 
-      Expression<Func<string, string, bool>> ce = 
-        (string x, string y) => object.ReferenceEquals(x, y) 
+      Expression<Func<string, string, bool>> ce =
+        (string x, string y) => object.ReferenceEquals(x, y)
                              || (x != null && x.Equals(y));
 
     }
@@ -301,6 +303,56 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
       var obj2 = new SomeStruct() { Name = "Jefke", Age = 43 };
       obj1.Equals(obj2).Should().BeFalse();
+    }
+
+    private static Func<T, int> GenerateHasher<T>()
+    {
+      ParameterExpression obj = Expression.Parameter(typeof(T), "obj");
+      Type hashCodeType = typeof(HashCode);
+      MethodInfo addMethod = hashCodeType.GetMethods().Single(method => method.Name == "Add" && method.GetParameters().Length == 1);
+      MethodInfo hashCodeMethod = hashCodeType.GetMethod("ToHashCode", BindingFlags.Public | BindingFlags.Instance)!;
+      ParameterExpression hashCode = Expression.Variable(hashCodeType, "hashCode");
+
+      BlockExpression block = Expression.Block(
+        type: typeof(int),
+        variables: new ParameterExpression[] { hashCode },
+        expressions: new Expression[]
+        {
+          Expression.Assign(hashCode, Expression.New(hashCodeType)),
+          Expression.Block(GenerateAddToHashCodeExpressions()),
+          Expression.Call(hashCode, hashCodeMethod)
+        });
+
+
+      Func<T, int> hasher = Expression.Lambda<Func<T, int>>(block, obj).Compile();
+      return hasher;
+
+      Expression[] GenerateAddToHashCodeExpressions()
+      {
+        List<Expression> adders = new List<Expression>();
+        foreach (PropertyInfo propInfo in typeof(T).GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
+        {
+          if (propInfo.IsDefined(typeof(IgnoreAttribute)))
+          {
+            continue;
+          }
+          MethodInfo boundAddMethod = addMethod.MakeGenericMethod(propInfo.PropertyType);
+          adders.Add(Expression.Call(hashCode, boundAddMethod, Expression.Property(obj, propInfo)));
+        }
+        return adders.ToArray();
+      }
+    }
+
+    [Fact]
+    public void ReturnSomeHashCodeForEqualObjects()
+    {
+      Func<SomeObject, int> hasher = GenerateHasher<SomeObject>();
+
+      var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
+      var obj2 = new SomeObject() { Name = "Jefke", Age = 43 };
+
+      (obj1 == obj2).Should().BeTrue();
+      obj1.GetHashCode().Should().Be(obj2.GetHashCode());
     }
   }
 }
