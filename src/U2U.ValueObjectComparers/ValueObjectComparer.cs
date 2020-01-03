@@ -8,8 +8,6 @@ using System.Reflection;
 
 namespace U2U.ValueObjectComparers
 {
-  // Declaring our own delegate to use C# 7 in arguments for struct types, as soon as I figure out how to make this work with Lambda<>.Compile
-
   internal delegate bool CompFunc<T>(T left, T right);
 
   /// <summary>
@@ -76,14 +74,24 @@ namespace U2U.ValueObjectComparers
       return andComparer;
     }
 
+
+
     internal static Func<T, int> GenerateHasher<T>()
     {
-      ParameterExpression obj = Expression.Parameter(typeof(T), "obj");
+      // Generates the equivalent of
+      //var hash = new HashCode();
+      //hash.Add(this.Price);
+      //hash.Add(this.When);
+      //return hash.ToHashCode();
       Type hashCodeType = typeof(HashCode);
-      MethodInfo addMethod = hashCodeType.GetMethods().Single(method => method.Name == "Add" && method.GetParameters().Length == 1);
-      MethodInfo hashCodeMethod = hashCodeType.GetMethod("ToHashCode", BindingFlags.Public | BindingFlags.Instance)!;
-      ParameterExpression hashCode = Expression.Variable(hashCodeType, "hashCode");
+      MethodInfo addMethod = 
+        hashCodeType.GetMethods()
+                    .Single(method => method.Name == "Add" && method.GetParameters().Length == 1);
+      MethodInfo hashCodeMethod = 
+        hashCodeType.GetMethod("ToHashCode", BindingFlags.Public | BindingFlags.Instance)!;
 
+      ParameterExpression obj = Expression.Parameter(typeof(T), "obj");
+      ParameterExpression hashCode = Expression.Variable(hashCodeType, "hashCode");
       BlockExpression block = Expression.Block(
         type: typeof(int),
         variables: new ParameterExpression[] { hashCode },
@@ -94,14 +102,14 @@ namespace U2U.ValueObjectComparers
           Expression.Call(hashCode, hashCodeMethod)
         });
 
-
       Func<T, int> hasher = Expression.Lambda<Func<T, int>>(block, obj).Compile();
       return hasher;
 
       Expression[] GenerateAddToHashCodeExpressions()
       {
         List<Expression> adders = new List<Expression>();
-        foreach (PropertyInfo propInfo in typeof(T).GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
+        foreach (PropertyInfo propInfo in typeof(T)
+          .GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
         {
           if (propInfo.IsDefined(typeof(IgnoreAttribute)))
           {
@@ -113,48 +121,6 @@ namespace U2U.ValueObjectComparers
         return adders.ToArray();
       }
     }
-
-    //private static Expression GeneratePropertyExpression(ParameterExpression obj, PropertyInfo prop)
-    //=> Expression.Property(obj, prop);
-
-    //internal static Func<T, int> GenerateHasher<T>()
-    //{
-    //  Type hashCodeType = typeof(HashCode);
-    //  MethodInfo hashCodeMethod = hashCodeType.GetMethod("ToHashCode", BindingFlags.Public | BindingFlags.Instance);
-    //  ConstructorInfo ctor = hashCodeType.GetConstructor(Array.Empty<Type>());
-    //  var hashCode = Expression.Variable(hashCodeType, "hashCode");
-    //  var returnTarget = Expression.Label();
-
-    //  var ret = Expression.Return(returnTarget);
-    //  var block = Expression.Block(
-    //    hashCode,
-    //    Expression.Assign(hashCode, Expression.New(ctor));
-
-    //    Expression.Return(returnTarget, Expression.Call();
-    //  Expression.Label(returnTarget)
-    //    ) ;
-
-
-
-    //  HashCode
-    //  List<Expression> comparers = new List<Expression>();
-    //  ParameterExpression obj = Expression.Parameter(typeof(T), "obj");
-
-    //  foreach (PropertyInfo propInfo in typeof(T).GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
-    //  {
-    //    if (propInfo.IsDefined(typeof(IgnoreAttribute)))
-    //    {
-    //      continue;
-    //    }
-    //    comparers.Add(GeneratePropertyExpression(obj, propInfo));
-    //  }
-
-
-    //  var andComparer = Expression.Lambda<Func<T, int>>(parameters, left).Compile();
-    //  return andComparer;
-    //}
-
-    //}
   }
 
   public sealed class ValueObjectComparer<T> where T : class
