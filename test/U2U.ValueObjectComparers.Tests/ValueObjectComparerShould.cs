@@ -5,7 +5,9 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using U2U.ValueObjectComparers;
+using U2U.ValueObjectComparers.Tests;
 using Xunit;
+using Xunit.Abstractions;
 
 #nullable enable
 
@@ -13,6 +15,13 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
 {
   public class ValueObjectComparerShould
   {
+    private readonly ITestOutputHelper output;
+
+    public ValueObjectComparerShould(ITestOutputHelper output)
+    {
+      this.output = output;
+    }
+
     [Fact]
     public void ReturnTrueForBothNullReferences()
     {
@@ -48,7 +57,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
         => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.Equals(this, obj);
 
       public override int GetHashCode()
-       => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.GetHashCode();
+       => ValueObjectComparer<SomeObjectWithValueTypeProperty>.Instance.GetHashCode(this);
 
     }
 
@@ -75,7 +84,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       public override bool Equals(object? obj)
         => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.Equals(this, obj);
       public override int GetHashCode()
-       => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.GetHashCode();
+       => ValueObjectComparer<SomeObjectWithStringProperty>.Instance.GetHashCode(this);
 
     }
 
@@ -93,56 +102,6 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     }
 
 
-    [Fact]
-    public void FactCheck()
-    {
-      var obj1 = new SomeObjectWithStringProperty() { Name = "Jefke" };
-      var obj2 = new SomeObjectWithStringProperty() { Name = "Jefke" };
-      string altName = "Jef";
-      altName += "ke";
-      object.ReferenceEquals(obj1.Name, altName).Should().BeFalse();
-
-      PropertyInfo propInfo = typeof(SomeObjectWithStringProperty).GetProperty(nameof(SomeObjectWithStringProperty.Name), BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public)!;
-      propInfo.PropertyType.Should().BeSameAs(typeof(string));
-
-      ParameterExpression left = Expression.Parameter(typeof(SomeObjectWithStringProperty), "left");
-      ParameterExpression right = Expression.Parameter(typeof(SomeObjectWithStringProperty), "right");
-
-      MethodInfo equalMethod = propInfo.PropertyType.GetMethod(nameof(Equals), new Type[] { propInfo.PropertyType })!;
-      Expression equalCall = Expression.Call(Expression.Property(left, propInfo), equalMethod, Expression.Property(right, propInfo));
-
-      Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool> comparer = Expression.Lambda<Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool>>(equalCall, left, right).Compile();
-      comparer(obj1, obj2).Should().BeTrue();
-
-      Expression leftValue = Expression.Property(left, propInfo);
-      Expression rightValue = Expression.Property(right, propInfo);
-
-      Expression refEqual = Expression.ReferenceEqual(leftValue, rightValue);
-      comparer = Expression.Lambda<Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool>>(refEqual, left, right).Compile();
-      comparer(obj1, obj2).Should().BeTrue();
-      obj2.Name = altName;
-      comparer(obj1, obj2).Should().BeFalse();
-
-      Expression nullConst = Expression.Constant(null);
-      Expression leftIsNotNull = Expression.Not(Expression.ReferenceEqual(leftValue, nullConst));
-      Expression rightIsNotNull = Expression.Not(Expression.ReferenceEqual(rightValue, nullConst));
-      Expression neitherIsNull = Expression.AndAlso(leftIsNotNull, rightIsNotNull);
-
-      comparer = Expression.Lambda<Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool>>(neitherIsNull, left, right).Compile();
-      comparer(obj1, obj2).Should().BeTrue();
-
-      Expression neitherIsNullAndIsEqual = Expression.AndAlso(neitherIsNull, equalCall);
-      comparer(obj1, obj2).Should().BeTrue();
-
-      Expression either = Expression.OrElse(refEqual, neitherIsNullAndIsEqual);
-      comparer = Expression.Lambda<Func<SomeObjectWithStringProperty, SomeObjectWithStringProperty, bool>>(either, left, right).Compile();
-      comparer(obj1, obj2).Should().BeTrue(); // Should call equals
-      obj2.Name = "Jefke";
-      comparer(obj1, obj2).Should().BeTrue(); // ReferenceEquals
-      obj2.Name = null;
-      comparer(obj1, obj2).Should().BeFalse(); // One side is null
-      comparer(obj2, obj1).Should().BeFalse(); // One side is null
-    }
 
     [Fact]
     public void ReturnTrueForEqualObjectsWithJustStringProperty()
@@ -302,56 +261,59 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       obj1.Equals(obj2).Should().BeFalse();
     }
 
-    private static Func<T, int> GenerateHasher<T>()
-    {
-      ParameterExpression obj = Expression.Parameter(typeof(T), "obj");
-      Type hashCodeType = typeof(HashCode);
-      MethodInfo addMethod = hashCodeType.GetMethods().Single(method => method.Name == "Add" && method.GetParameters().Length == 1);
-      MethodInfo hashCodeMethod = hashCodeType.GetMethod("ToHashCode", BindingFlags.Public | BindingFlags.Instance)!;
-      ParameterExpression hashCode = Expression.Variable(hashCodeType, "hashCode");
+    //private static Func<T, int> GenerateHasher<T>()
+    //{
+    //  ParameterExpression obj = Expression.Parameter(typeof(T), "obj");
+    //  Type hashCodeType = typeof(HashCode);
+    //  MethodInfo addMethod = hashCodeType.GetMethods().Single(method => method.Name == "Add" && method.GetParameters().Length == 1);
+    //  MethodInfo hashCodeMethod = hashCodeType.GetMethod("ToHashCode", BindingFlags.Public | BindingFlags.Instance)!;
+    //  ParameterExpression hashCode = Expression.Variable(hashCodeType, "hashCode");
 
-      BlockExpression block = Expression.Block(
-        type: typeof(int),
-        variables: new ParameterExpression[] { hashCode },
-        expressions: new Expression[]
-        {
-          Expression.Assign(hashCode, Expression.New(hashCodeType)),
-          Expression.Block(GenerateAddToHashCodeExpressions()),
-          Expression.Call(hashCode, hashCodeMethod)
-        });
+    //  BlockExpression block = Expression.Block(
+    //    type: typeof(int),
+    //    variables: new ParameterExpression[] { hashCode },
+    //    expressions: new Expression[]
+    //    {
+    //      Expression.Assign(hashCode, Expression.New(hashCodeType)),
+    //      Expression.Block(GenerateAddToHashCodeExpressions()),
+    //      Expression.Call(hashCode, hashCodeMethod)
+    //    });
 
 
-      Func<T, int> hasher = Expression.Lambda<Func<T, int>>(block, obj).Compile();
-      return hasher;
+    //  Func<T, int> hasher = Expression.Lambda<Func<T, int>>(block, obj).Compile();
+    //  return hasher;
 
-      Expression[] GenerateAddToHashCodeExpressions()
-      {
-        List<Expression> adders = new List<Expression>();
-        foreach (PropertyInfo propInfo in typeof(T).GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
-        {
-          if (propInfo.IsDefined(typeof(IgnoreAttribute)))
-          {
-            continue;
-          }
-          MethodInfo boundAddMethod = addMethod.MakeGenericMethod(propInfo.PropertyType);
-          adders.Add(Expression.Call(hashCode, boundAddMethod, Expression.Property(obj, propInfo)));
-        }
-        return adders.ToArray();
-      }
-    }
+    //  Expression[] GenerateAddToHashCodeExpressions()
+    //  {
+    //    List<Expression> adders = new List<Expression>();
+    //    foreach (PropertyInfo propInfo in typeof(T).GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
+    //    {
+    //      if (propInfo.IsDefined(typeof(IgnoreAttribute)))
+    //      {
+    //        continue;
+    //      }
+    //      MethodInfo boundAddMethod = addMethod.MakeGenericMethod(propInfo.PropertyType);
+    //      adders.Add(Expression.Call(hashCode, boundAddMethod, Expression.Property(obj, propInfo)));
+    //    }
+    //    return adders.ToArray();
+    //  }
+    //}
 
     [Fact]
-    public void ReturnSomeHashCodeForEqualObjects()
+    public void ReturnSameHashCodeForEqualObjects()
     {
       var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
       var obj2 = new SomeObject() { Name = "Jefke", Age = 43 };
+
+      output.WriteLine($"# obj1 = {obj1.GetHashCode()}");
+      output.WriteLine($"# obj2 = {obj2.GetHashCode()}");
 
       (obj1 == obj2).Should().BeTrue();
       obj1.GetHashCode().Should().Be(obj2.GetHashCode());
     }
 
     [Fact]
-    public void ReturnSomeHashCodeForSameObject()
+    public void ReturnSameHashCodeForSameObject()
     {
       var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
 
@@ -359,6 +321,273 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       (obj1 == obj1).Should().BeTrue();
 #pragma warning restore CS1718 // Comparison made to same variable
       obj1.GetHashCode().Should().Be(obj1.GetHashCode());
+    }
+
+    [Fact]
+    public void CheckAssumptionsForCollections()
+    {
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", "Volleyball" };
+
+      hobbies1.SequenceEqual(hobbies2).Should().BeTrue();
+    }
+
+    [Fact]
+    public void ReturnTrueForEqualObjectsWithNestedCollections()
+    {
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", "Volleyball" };
+
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies2
+      };
+
+      obj1.Equals(obj2).Should().BeTrue(because: "The objects should equal");
+      obj2.Equals(obj1).Should().BeTrue(because: "The objects should equal");
+    }
+
+    [Fact]
+    public void ReturnSameHashCodeForEqualObjectsWithNestedCollections()
+    {
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", "Volleyball" };
+
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies2
+      };
+
+      output.WriteLine($"# obj1 = {obj1.GetHashCode()}");
+      output.WriteLine($"# obj2 = {obj2.GetHashCode()}");
+
+      obj1.Should().Be(obj2);
+      obj1.GetHashCode().Should().Be(obj2.GetHashCode(), because: "The objects are equal so they should have the same hashcode.");
+    }
+
+    [Fact]
+    public void ReturnDifferentHashCodeForObjectsWithDifferentCollections()
+    {
+      // Hashcode for different objects can be the same, but very rare, so I'll take my chances 
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", "Tennis" };
+
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies2
+      };
+
+      output.WriteLine($"# obj1 = {obj1.GetHashCode()}");
+      output.WriteLine($"# obj2 = {obj2.GetHashCode()}");
+
+      obj1.GetHashCode().Should().NotBe(obj2.GetHashCode(), because: "The objects are not equal so they should not normally have the same hashcode.");
+    }
+
+    [Fact]
+    public void ReturnSameHashCodeForEqualObjectsWithNestedCollectionsEvenWithNulls()
+    {
+      var hobbies1 = new List<string> { "WindSurfing", null, "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", null, "Volleyball" };
+
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies2
+      };
+
+      output.WriteLine($"# obj1 = {obj1.GetHashCode()}");
+      output.WriteLine($"# obj2 = {obj2.GetHashCode()}");
+
+      obj1.Should().Be(obj2);
+      obj1.GetHashCode().Should().Be(obj2.GetHashCode(), because: "The objects are equal so they should have the same hashcode.");
+    }
+
+    [Fact]
+    public void ReturnFalseForObjectsWithDifferentNestedCollections()
+    {
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", "Tennis" };
+
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies2
+      };
+
+      obj1.Equals(obj2).Should().BeFalse(because: "The objects should equal");
+      obj2.Equals(obj1).Should().BeFalse(because: "The objects should equal");
+    }
+
+    [Fact]
+    public void ReturnDifferentHashCodeForNonEqualObjects()
+    {
+      var obj1 = new SomeObject() { Name = "Jefke", Age = 43 };
+      var obj2 = new SomeObject() { Name = "Jef", Age = 43 };
+
+      output.WriteLine($"# obj1 = {obj1.GetHashCode()}");
+      output.WriteLine($"# obj2 = {obj2.GetHashCode()}");
+
+      obj1.GetHashCode().Should().NotBe(obj2.GetHashCode());
+    }
+
+    //[Fact]
+    //public void CheckHashCodeClass()
+    //{
+    //  var hashCode = new HashCode();
+    //  hashCode.Add("Jefke");
+    //  hashCode.Add(43);
+    //  var firstHash = hashCode.ToHashCode();
+
+    //  hashCode = new HashCode();
+    //  hashCode.Add("Jefke");
+    //  hashCode.Add(43);
+    //  var secondHash = hashCode.ToHashCode();
+
+    //  hashCode = new HashCode();
+    //  hashCode.Add("Jef");
+    //  hashCode.Add(43);
+    //  var thirdHash = hashCode.ToHashCode();
+
+    //  output.WriteLine($"{firstHash} - {secondHash} - {thirdHash}");
+    //}
+
+    [Fact]
+    public void ReturnTrueForEqualObjectsWithNullCollections()
+    {
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = null
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = null
+      };
+
+      obj1.Equals(obj2).Should().BeTrue(because: "The objects should equal");
+      obj2.Equals(obj1).Should().BeTrue(because: "The objects should equal");
+    }
+
+    [Fact]
+    public void ReturnTrueForEqualObjectsWithSameCollections()
+    {
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var obj1 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+      var obj2 = new SomeObjectWithCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Hobbies = hobbies1
+      };
+
+      obj1.Equals(obj2).Should().BeTrue(because: "The objects should equal");
+      obj2.Equals(obj1).Should().BeTrue(because: "The objects should equal");
+    }
+
+    [Fact]
+    public void ReturnTrueForEqualObjectsWithNestedValueObjectCollection()
+    {
+      DateTime someDate = new DateTime(2020, 03, 31);
+      var obj1 = new SomeObjectWithNestedCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Nested = new NestedValueObject[]
+        {
+          new NestedValueObject { Price = 100, When = someDate },
+          new NestedValueObject { Price = 200, When = someDate.AddDays(1) },
+          new NestedValueObject { Price = 300, When = someDate.AddDays(2) }
+       }
+      };
+      var obj2 = new SomeObjectWithNestedCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Nested = new NestedValueObject[]
+        {
+          new NestedValueObject { Price = 100, When = someDate },
+          new NestedValueObject { Price = 200, When = someDate.AddDays(1) },
+          new NestedValueObject { Price = 300, When = someDate.AddDays(2) }
+        }
+      };
+      obj1.Should().Be(obj2);
+    }
+
+    [Fact]
+    public void ReturnSameHashCodeForEqualObjectsWithNestedValueObjectCollection()
+    {
+      DateTime someDate = new DateTime(2020, 03, 31);
+      var obj1 = new SomeObjectWithNestedCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Nested = new NestedValueObject[]
+        {
+          new NestedValueObject { Price = 100, When = someDate },
+          new NestedValueObject { Price = 200, When = someDate.AddDays(1) },
+          new NestedValueObject { Price = 300, When = someDate.AddDays(2) }
+       }
+      };
+      var obj2 = new SomeObjectWithNestedCollection
+      {
+        Name = "Jefke",
+        Age = 43,
+        Nested = new NestedValueObject[]
+        {
+          new NestedValueObject { Price = 100, When = someDate },
+          new NestedValueObject { Price = 200, When = someDate.AddDays(1) },
+          new NestedValueObject { Price = 300, When = someDate.AddDays(2) }
+        }
+      };
+
+      obj1.Should().Be(obj2);
+      obj1.GetHashCode().Should().Be(obj2.GetHashCode(), because: "The objects are equal so they should have the same hashcode.");
     }
   }
 }

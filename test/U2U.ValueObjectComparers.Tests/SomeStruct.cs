@@ -23,7 +23,7 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       => ValueObjectComparer<SomeStruct>.Instance.Equals(this, other);
 
     public override int GetHashCode()
-      => ValueObjectComparer<SomeStruct>.Instance.GetHashCode();
+      => ValueObjectComparer<SomeStruct>.Instance.GetHashCode(this);
 
   }
 }

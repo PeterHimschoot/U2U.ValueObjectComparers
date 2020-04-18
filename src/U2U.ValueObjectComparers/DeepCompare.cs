@@ -3,7 +3,7 @@
 namespace U2U.ValueObjectComparers
 {
   [AttributeUsage(AttributeTargets.Property)]
-  public class IgnoreAttribute : Attribute
+  public class DeepCompareAttribute : Attribute
   {
   }
 }

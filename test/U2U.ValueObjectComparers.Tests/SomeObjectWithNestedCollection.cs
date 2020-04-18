@@ -4,9 +4,9 @@ using U2U.ValueObjectComparers.Tests;
 
 namespace U2U.EntityFrameworkCore.Abstractions.Tests
 {
-  public class SomeObjectWithNested
+  public class SomeObjectWithNestedCollection
   {
-    public static bool operator ==(SomeObjectWithNested left, SomeObjectWithNested right)
+    public static bool operator ==(SomeObjectWithNestedCollection left, SomeObjectWithNestedCollection right)
     {
       if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null))
       {
@@ -15,19 +15,20 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
       return ReferenceEquals(left, null) || left.Equals(right);
     }
 
-    public static bool operator !=(SomeObjectWithNested left, SomeObjectWithNested right)
+    public static bool operator !=(SomeObjectWithNestedCollection left, SomeObjectWithNestedCollection right)
       => !(left == right);
 
     public string Name { get; set; }
 
     public int Age { get; set; }
 
-    public NestedValueObject Nested { get; set; }
+    [DeepCompare]
+    public NestedValueObject[] Nested { get; set; }
 
     public override bool Equals(object obj)
-      => ValueObjectComparer<SomeObjectWithNested>.Instance.Equals(this, obj);
+      => ValueObjectComparer<SomeObjectWithNestedCollection>.Instance.Equals(this, obj);
 
     public override int GetHashCode()
-      => ValueObjectComparer<SomeObjectWithNested>.Instance.GetHashCode(this);
+      => ValueObjectComparer<SomeObjectWithNestedCollection>.Instance.GetHashCode(this);
   }
 }

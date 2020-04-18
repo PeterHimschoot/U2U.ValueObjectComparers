@@ -83,7 +83,7 @@ public class Test
     When = new DateTime(2019, 12, 24)
   };
 
-#if false
+#if true
   [Benchmark()]
   public void UsingHCValueObjectsThatAreEqual()
   {
