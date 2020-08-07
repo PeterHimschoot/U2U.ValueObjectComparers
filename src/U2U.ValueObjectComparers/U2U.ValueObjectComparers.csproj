@@ -16,6 +16,7 @@
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/PeterHimschoot/U2U.ValueObjectComparers</RepositoryUrl>
     <PackageTags>Domain Driven Design ValueObject</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

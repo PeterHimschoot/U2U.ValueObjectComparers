@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿#pragma warning disable HAA0101 // Array allocation for params parameter
+using System.Runtime.CompilerServices;
 
 using System;
 using System.Collections.Generic;
@@ -39,8 +40,6 @@ namespace U2U.ValueObjectComparers
       SequenceHashCodeMethod = typeof(ExpressionGenerater)
         .GetMethods(bindingAttr: BindingFlags.NonPublic | BindingFlags.Static)
         .Single(methodInfo => methodInfo.Name == nameof(ExpressionGenerater.AddHashCodeMembersForCollection));
-
-
     }
 
     private static Expression GenerateEqualityExpression(ParameterExpression left, ParameterExpression right, PropertyInfo propInfo)
@@ -225,3 +224,4 @@ namespace U2U.ValueObjectComparers
 
   }
 }
+#pragma warning restore HAA0101 // Array allocation for params parameter
