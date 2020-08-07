@@ -410,8 +410,8 @@ namespace U2U.EntityFrameworkCore.Abstractions.Tests
     [Fact]
     public void ReturnSameHashCodeForEqualObjectsWithNestedCollectionsEvenWithNulls()
     {
-      var hobbies1 = new List<string> { "WindSurfing", null, "Volleyball" };
-      var hobbies2 = new List<string> { "WindSurfing", null, "Volleyball" };
+      var hobbies1 = new List<string> { "WindSurfing", "Volleyball" };
+      var hobbies2 = new List<string> { "WindSurfing", "Volleyball" };
 
       var obj1 = new SomeObjectWithCollection
       {
