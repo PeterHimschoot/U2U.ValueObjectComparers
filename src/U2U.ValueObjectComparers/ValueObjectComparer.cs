@@ -1,11 +1,10 @@
 ﻿#pragma warning disable HAA0101 // Array allocation for params parameter
-using System.Runtime.CompilerServices;
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("U2U.ValueObjectComparers.Tests")]
 
@@ -57,11 +56,11 @@ namespace U2U.ValueObjectComparers
       else if (propInfo.IsDefined(typeof(DeepCompareAttribute)))
       {
         // Get type of collection elements
-        var collectionElementType = propertyType.GetEnumeratedType();
-        var boundEqualMethod = SequenceEqualMethod.MakeGenericMethod(collectionElementType);
-        var asEnumerableType = typeof(IEnumerable<>).MakeGenericType(collectionElementType);
-        var leftCast = Expression.Convert(Expression.Property(left, propInfo), asEnumerableType);
-        var rightCast = Expression.Convert(Expression.Property(right, propInfo), asEnumerableType);
+        Type? collectionElementType = propertyType.GetEnumeratedType();
+        MethodInfo? boundEqualMethod = SequenceEqualMethod.MakeGenericMethod(collectionElementType);
+        Type? asEnumerableType = typeof(IEnumerable<>).MakeGenericType(collectionElementType);
+        UnaryExpression? leftCast = Expression.Convert(Expression.Property(left, propInfo), asEnumerableType);
+        UnaryExpression? rightCast = Expression.Convert(Expression.Property(right, propInfo), asEnumerableType);
         equalCall = Expression.Call(instance: null, method: boundEqualMethod, arg0: leftCast, arg1: rightCast);
       }
       else
@@ -94,7 +93,7 @@ namespace U2U.ValueObjectComparers
 
     internal static CompFunc<T> GenerateComparer<T>()
     {
-      List<Expression> comparers = new List<Expression>();
+      var comparers = new List<Expression>();
       ParameterExpression left = Expression.Parameter(typeof(T), "left");
       ParameterExpression right = Expression.Parameter(typeof(T), "right");
 
@@ -110,13 +109,13 @@ namespace U2U.ValueObjectComparers
         }
       }
       Expression ands = comparers.Aggregate((left, right) => Expression.AndAlso(left, right));
-      var andComparer = Expression.Lambda<CompFunc<T>>(ands, left, right).Compile();
+      CompFunc<T>? andComparer = Expression.Lambda<CompFunc<T>>(ands, left, right).Compile();
       return andComparer;
     }
 
     internal static int AddHashCodeMembersForCollection<T>(IEnumerable<T> coll)
     {
-      HashCode hashCode = new HashCode();
+      var hashCode = new HashCode();
       if (coll != null)
       {
         foreach (T el in coll)
@@ -153,7 +152,7 @@ namespace U2U.ValueObjectComparers
 
       List<Expression> GenerateAddToHashCodeExpressions()
       {
-        List<Expression> adders = new List<Expression>();
+        var adders = new List<Expression>();
         foreach (PropertyInfo propInfo in typeof(T)
           .GetProperties(BindingFlags.GetProperty | BindingFlags.Instance | BindingFlags.Public))
         {
@@ -164,10 +163,10 @@ namespace U2U.ValueObjectComparers
           if (propInfo.IsDefined(typeof(DeepCompareAttribute)))
           {
             Type? collectionElementType = propInfo.PropertyType.GetEnumeratedType();
-            var sequenceHashCode = SequenceHashCodeMethod.MakeGenericMethod(collectionElementType);
-            var asEnumerableType = typeof(IEnumerable<>).MakeGenericType(collectionElementType);
-            var cast = Expression.Convert(Expression.Property(obj, propInfo), asEnumerableType);
-            var call = Expression.Call(instance: null, method: sequenceHashCode, arguments: cast);
+            MethodInfo? sequenceHashCode = SequenceHashCodeMethod.MakeGenericMethod(collectionElementType);
+            Type? asEnumerableType = typeof(IEnumerable<>).MakeGenericType(collectionElementType);
+            UnaryExpression? cast = Expression.Convert(Expression.Property(obj, propInfo), asEnumerableType);
+            MethodCallExpression? call = Expression.Call(instance: null, method: sequenceHashCode, arguments: cast);
             adders.Add(Expression.Call(instance: hashCode, AddCollectionHashCodeMethod, call));
           }
           else
@@ -185,8 +184,8 @@ namespace U2U.ValueObjectComparers
   {
     public static ValueObjectComparer<T> Instance { get; } = new ValueObjectComparer<T>();
 
-    private CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
-    private Func<T, int> hasher = ExpressionGenerater.GenerateHasher<T>();
+    private readonly CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
+    private readonly Func<T, int> hasher = ExpressionGenerater.GenerateHasher<T>();
 
     public bool Equals(T? left, T? right)
       => object.ReferenceEquals(left, right)
@@ -197,7 +196,7 @@ namespace U2U.ValueObjectComparers
       || (right is object && right.GetType() == left?.GetType() && this.comparer(left, (T)right));
 
     public int GetHashCode(T obj)
-      => hasher(obj);
+      => this.hasher(obj);
 
     public override int GetHashCode()
       => throw new InvalidOperationException("Do not call GetHashCode(), instead use GetHashCode(this)");
@@ -207,8 +206,8 @@ namespace U2U.ValueObjectComparers
   {
     public static ValueObjectComparerStruct<T> Instance { get; } = new ValueObjectComparerStruct<T>();
 
-    private CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
-    private Func<T, int> hasher = ExpressionGenerater.GenerateHasher<T>();
+    private readonly CompFunc<T> comparer = ExpressionGenerater.GenerateComparer<T>();
+    private readonly Func<T, int> hasher = ExpressionGenerater.GenerateHasher<T>();
 
     public bool Equals(in T left, in T right)
       => this.comparer(left, right);
@@ -217,7 +216,7 @@ namespace U2U.ValueObjectComparers
       => right is object && right.GetType() == typeof(T) && Equals(left, (T)right);
 
     public int GetHashCode(in T obj)
-      => hasher(obj);
+      => this.hasher(obj);
 
     public override int GetHashCode()
   => throw new InvalidOperationException("Do not call GetHashCode(), instead use GetHashCode(this)");
