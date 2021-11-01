@@ -1,33 +1,28 @@
-﻿using System;
-using U2U.ValueObjectComparers;
-using U2U.ValueObjectComparers.Tests;
+﻿namespace U2U.ValueObjectComparers.Tests;
 
-namespace U2U.EntityFrameworkCore.Abstractions.Tests
+public class SomeObjectWithNested
 {
-  public class SomeObjectWithNested
+  public static bool operator ==(SomeObjectWithNested left, SomeObjectWithNested right)
   {
-    public static bool operator ==(SomeObjectWithNested left, SomeObjectWithNested right)
+    if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null))
     {
-      if (ReferenceEquals(left, null) ^ ReferenceEquals(right, null))
-      {
-        return false;
-      }
-      return ReferenceEquals(left, null) || left.Equals(right);
+      return false;
     }
-
-    public static bool operator !=(SomeObjectWithNested left, SomeObjectWithNested right)
-      => !(left == right);
-
-    public string Name { get; set; }
-
-    public int Age { get; set; }
-
-    public NestedValueObject Nested { get; set; }
-
-    public override bool Equals(object obj)
-      => ValueObjectComparer<SomeObjectWithNested>.Instance.Equals(this, obj);
-
-    public override int GetHashCode()
-      => ValueObjectComparer<SomeObjectWithNested>.Instance.GetHashCode(this);
+    return ReferenceEquals(left, null) || left.Equals(right);
   }
+
+  public static bool operator !=(SomeObjectWithNested left, SomeObjectWithNested right)
+    => !(left == right);
+
+  public string Name { get; set; }
+
+  public int Age { get; set; }
+
+  public NestedValueObject Nested { get; set; }
+
+  public override bool Equals(object obj)
+    => ValueObjectComparer<SomeObjectWithNested>.Instance.Equals(this, obj);
+
+  public override int GetHashCode()
+    => ValueObjectComparer<SomeObjectWithNested>.Instance.GetHashCode(this);
 }
