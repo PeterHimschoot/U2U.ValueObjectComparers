@@ -5,7 +5,7 @@
     <nullable>enable</nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>10.0</LangVersion>
-    <VersionPrefix>2.1.2</VersionPrefix>
+    <VersionPrefix>2.2.1</VersionPrefix>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
@@ -13,12 +13,20 @@
     <Authors>Peter Himschoot</Authors>
     <Company>U2U</Company>
     <Description>Quickly and efficiently implement the Equals and GetHashCode for value objects</Description>
-    <Version>2.2.0</Version>
+    <Version>2.2.1</Version>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/PeterHimschoot/U2U.ValueObjectComparers</RepositoryUrl>
     <PackageTags>Domain Driven Design ValueObject</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageIcon>U2U.png</PackageIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\U2U.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
