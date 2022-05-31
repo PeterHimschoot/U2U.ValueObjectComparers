@@ -20,7 +20,7 @@ public class MainConfig : ManualConfig
   {
     // You can use this to compare performance between different runtimes...
     //Add(Job.Default.With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp20));
-    this.Add(Job.Default.With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp31));
+    this.Add(Job.Default.With(Platform.X64).With(CsProjCoreToolchain.NetCoreApp60));
 
     this.Add(MemoryDiagnoser.Default);
     this.Add(new MinimalColumnProvider());
