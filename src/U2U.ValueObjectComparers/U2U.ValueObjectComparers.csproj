@@ -13,7 +13,7 @@
     <Authors>Peter Himschoot</Authors>
     <Company>U2U</Company>
     <Description>Quickly and efficiently implement the Equals and GetHashCode for value objects</Description>
-    <Version>2.2.1</Version>
+    <Version>2.2.2</Version>
     <PackageProjectUrl></PackageProjectUrl>
     <RepositoryUrl>https://github.com/PeterHimschoot/U2U.ValueObjectComparers</RepositoryUrl>
     <PackageTags>Domain Driven Design ValueObject</PackageTags>
@@ -30,7 +30,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="1.1.1" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0">
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
