@@ -50,6 +50,7 @@ namespace U2U.ValueObjectComparers
       Expression equalCall;
       if (equitableType.IsAssignableFrom(propertyType))
       {
+        // left.Prop.Equals(right.Prop)
         equalMethod = equitableType.GetMethod(nameof(Equals), new Type[] { propertyType });
         equalCall = Expression.Call(Expression.Property(left, propInfo), equalMethod, Expression.Property(right, propInfo));
       }
@@ -65,6 +66,7 @@ namespace U2U.ValueObjectComparers
       }
       else
       {
+        // left.Prop.Equals((object)right.Prop)
         equalMethod = propertyType.GetMethod(nameof(Equals), new Type[] { typeof(object) });
         equalCall = Expression.Call(Expression.Property(left, propInfo), equalMethod, Expression.Convert(Expression.Property(right, propInfo), typeof(object)));
       }
